@@ -1,92 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
+import clsx from 'clsx';
 
-// Mock products data
-const allProducts = [
-  {
-    id: 1,
-    name: 'Classic Oxford Shirt',
-    price: 89.99,
-    image: 'https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'classic-oxford-shirt',
-    category: 'tops',
-    brand: 'Bound Essentials',
-    color: 'blue',
-  },
-  {
-    id: 2,
-    name: 'Slim Fit Chinos',
-    price: 69.99,
-    image: 'https://images.pexels.com/photos/3760610/pexels-photo-3760610.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'slim-fit-chinos',
-    category: 'bottoms',
-    brand: 'Urban Style',
-    color: 'beige',
-  },
-  {
-    id: 3,
-    name: 'Premium Leather Watch',
-    price: 129.99,
-    image: 'https://images.pexels.com/photos/9979804/pexels-photo-9979804.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'premium-leather-watch',
-    category: 'accessories',
-    brand: 'Lux Time',
-    color: 'brown',
-  },
-  {
-    id: 4,
-    name: 'Casual Denim Jacket',
-    price: 119.99,
-    image: 'https://images.pexels.com/photos/1192609/pexels-photo-1192609.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'casual-denim-jacket',
-    category: 'outerwear',
-    brand: 'Bound Essentials',
-    color: 'blue',
-  },
-  {
-    id: 5,
-    name: 'Designer Sunglasses',
-    price: 99.99,
-    image: 'https://images.pexels.com/photos/701877/pexels-photo-701877.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'designer-sunglasses',
-    category: 'accessories',
-    brand: 'Vista',
-    color: 'black',
-  },
-  {
-    id: 6,
-    name: 'Premium Sneakers',
-    price: 139.99,
-    image: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'premium-sneakers',
-    category: 'footwear',
-    brand: 'Step Elite',
-    color: 'white',
-  },
-  {
-    id: 7,
-    name: 'Merino Wool Sweater',
-    price: 109.99,
-    image: 'https://images.pexels.com/photos/45982/pexels-photo-45982.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'merino-wool-sweater',
-    category: 'tops',
-    brand: 'Bound Essentials',
-    color: 'gray',
-  },
-  {
-    id: 8,
-    name: 'Leather Belt',
-    price: 59.99,
-    image: 'https://images.pexels.com/photos/45055/pexels-photo-45055.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    slug: 'leather-belt',
-    category: 'accessories',
-    brand: 'Urban Style',
-    color: 'brown',
-  },
-];
+const allProducts = [/* ... your mock products here ... */];
 
-// Filter options
 const categories = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Footwear', 'Accessories'];
 const brands = ['All', 'Bound Essentials', 'Urban Style', 'Lux Time', 'Vista', 'Step Elite'];
 const colors = ['All', 'Black', 'White', 'Blue', 'Brown', 'Beige', 'Gray'];
@@ -114,289 +32,164 @@ const ShopPage: React.FC = () => {
     priceRange: priceRanges[0],
   });
   const [sortOption, setSortOption] = useState('featured');
-  const [showFilters, setShowFilters] = useState(false);
-  const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
+  const [showDrawer, setShowDrawer] = useState(false);
 
-  // Toggle filter section on mobile
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
-
-  // Toggle filter category expand/collapse
-  const toggleFilterExpand = (filterName: string) => {
-    if (expandedFilter === filterName) {
-      setExpandedFilter(null);
-    } else {
-      setExpandedFilter(filterName);
-    }
-  };
-
-  // Update filters
-  const handleFilterChange = (filterType: keyof FilterOption, value: any) => {
-    setFilters({ ...filters, [filterType]: value });
-  };
-
-  // Apply filters and sorting
   useEffect(() => {
-    let filteredProducts = [...allProducts];
-    
-    // Apply category filter
+    let filtered = [...allProducts];
     if (filters.category !== 'All') {
-      filteredProducts = filteredProducts.filter(
-        product => product.category.toLowerCase() === filters.category.toLowerCase()
-      );
+      filtered = filtered.filter(p => p.category.toLowerCase() === filters.category.toLowerCase());
     }
-    
-    // Apply brand filter
     if (filters.brand !== 'All') {
-      filteredProducts = filteredProducts.filter(
-        product => product.brand === filters.brand
-      );
+      filtered = filtered.filter(p => p.brand === filters.brand);
     }
-    
-    // Apply color filter
     if (filters.color !== 'All') {
-      filteredProducts = filteredProducts.filter(
-        product => product.color.toLowerCase() === filters.color.toLowerCase()
-      );
+      filtered = filtered.filter(p => p.color.toLowerCase() === filters.color.toLowerCase());
     }
-    
-    // Apply price range filter
-    filteredProducts = filteredProducts.filter(
-      product => product.price >= filters.priceRange.min && product.price <= filters.priceRange.max
+    filtered = filtered.filter(
+      p => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
     );
-    
-    // Apply sorting
+
     if (sortOption === 'price-low-high') {
-      filteredProducts.sort((a, b) => a.price - b.price);
+      filtered.sort((a, b) => a.price - b.price);
     } else if (sortOption === 'price-high-low') {
-      filteredProducts.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => b.price - a.price);
     } else if (sortOption === 'name-a-z') {
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'name-z-a') {
-      filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+      filtered.sort((a, b) => b.name.localeCompare(a.name));
     }
-    
-    setProducts(filteredProducts);
+
+    setProducts(filtered);
   }, [filters, sortOption]);
 
-  useEffect(() => {
-    // Set page title
-    document.title = 'Shop | Bound';
-    
-    // Scroll to top on page load
-    window.scrollTo(0, 0);
-  }, []);
+  const handleFilterChange = (type: keyof FilterOption, value: any) => {
+    setFilters(prev => ({ ...prev, [type]: value }));
+  };
 
-  // Filter component for mobile/desktop
   const FilterSection = () => (
-    <div className="bg-white p-4 rounded-lg shadow-sm">
-      <div className="space-y-6">
-        {/* Category Filter */}
-        <div>
-          <div 
-            className="flex justify-between items-center cursor-pointer" 
-            onClick={() => toggleFilterExpand('category')}
-          >
-            <h3 className="font-poppins font-medium text-lg">Categories</h3>
-            {expandedFilter === 'category' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </div>
-          
-          {expandedFilter === 'category' && (
-            <div className="mt-3 space-y-2">
-              {categories.map((category) => (
-                <div key={category} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`category-${category}`}
-                    name="category"
-                    checked={filters.category === category}
-                    onChange={() => handleFilterChange('category', category)}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`category-${category}`} className="font-inter text-sm cursor-pointer">
-                    {category}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Brand Filter */}
-        <div>
-          <div 
-            className="flex justify-between items-center cursor-pointer" 
-            onClick={() => toggleFilterExpand('brand')}
-          >
-            <h3 className="font-poppins font-medium text-lg">Brands</h3>
-            {expandedFilter === 'brand' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </div>
-          
-          {expandedFilter === 'brand' && (
-            <div className="mt-3 space-y-2">
-              {brands.map((brand) => (
-                <div key={brand} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`brand-${brand}`}
-                    name="brand"
-                    checked={filters.brand === brand}
-                    onChange={() => handleFilterChange('brand', brand)}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`brand-${brand}`} className="font-inter text-sm cursor-pointer">
-                    {brand}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Color Filter */}
-        <div>
-          <div 
-            className="flex justify-between items-center cursor-pointer" 
-            onClick={() => toggleFilterExpand('color')}
-          >
-            <h3 className="font-poppins font-medium text-lg">Colors</h3>
-            {expandedFilter === 'color' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </div>
-          
-          {expandedFilter === 'color' && (
-            <div className="mt-3 space-y-2">
-              {colors.map((color) => (
-                <div key={color} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`color-${color}`}
-                    name="color"
-                    checked={filters.color === color}
-                    onChange={() => handleFilterChange('color', color)}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`color-${color}`} className="font-inter text-sm cursor-pointer">
-                    {color}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Price Filter */}
-        <div>
-          <div 
-            className="flex justify-between items-center cursor-pointer" 
-            onClick={() => toggleFilterExpand('price')}
-          >
-            <h3 className="font-poppins font-medium text-lg">Price</h3>
-            {expandedFilter === 'price' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </div>
-          
-          {expandedFilter === 'price' && (
-            <div className="mt-3 space-y-2">
-              {priceRanges.map((range, index) => (
-                <div key={index} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`price-${index}`}
-                    name="price"
-                    checked={filters.priceRange.label === range.label}
-                    onChange={() => handleFilterChange('priceRange', range)}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`price-${index}`} className="font-inter text-sm cursor-pointer">
-                    {range.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+    <div className="space-y-4 p-4">
+      <div>
+        <h3 className="font-semibold mb-2">Category</h3>
+        {categories.map((cat) => (
+          <label key={cat} className="block">
+            <input
+              type="radio"
+              name="category"
+              checked={filters.category === cat}
+              onChange={() => handleFilterChange('category', cat)}
+              className="mr-2"
+            />
+            {cat}
+          </label>
+        ))}
+      </div>
+      <div>
+        <h3 className="font-semibold mb-2">Brand</h3>
+        {brands.map((brand) => (
+          <label key={brand} className="block">
+            <input
+              type="radio"
+              name="brand"
+              checked={filters.brand === brand}
+              onChange={() => handleFilterChange('brand', brand)}
+              className="mr-2"
+            />
+            {brand}
+          </label>
+        ))}
+      </div>
+      <div>
+        <h3 className="font-semibold mb-2">Color</h3>
+        {colors.map((color) => (
+          <label key={color} className="block">
+            <input
+              type="radio"
+              name="color"
+              checked={filters.color === color}
+              onChange={() => handleFilterChange('color', color)}
+              className="mr-2"
+            />
+            {color}
+          </label>
+        ))}
+      </div>
+      <div>
+        <h3 className="font-semibold mb-2">Price</h3>
+        {priceRanges.map((range, i) => (
+          <label key={i} className="block">
+            <input
+              type="radio"
+              name="price"
+              checked={filters.priceRange.label === range.label}
+              onChange={() => handleFilterChange('priceRange', range)}
+              className="mr-2"
+            />
+            {range.label}
+          </label>
+        ))}
       </div>
     </div>
   );
 
   return (
-    <div className="bg-secondary min-h-screen py-8 md:py-12">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col mb-8">
-          <h1 className="font-poppins font-bold text-3xl md:text-4xl text-primary">Shop</h1>
-          <p className="font-inter text-gray-600 mt-2">
-            Discover our curated collection of premium menswear
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+          <h1 className="text-3xl font-bold text-gray-800">Shop</h1>
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowDrawer(true)}
+              className="flex items-center border px-4 py-2 rounded-md text-sm bg-white"
+            >
+              <Filter size={16} className="mr-2" />
+              Filters
+            </button>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="border px-3 py-2 text-sm rounded-md bg-white"
+            >
+              <option value="featured">Featured</option>
+              <option value="price-low-high">Price: Low to High</option>
+              <option value="price-high-low">Price: High to Low</option>
+              <option value="name-a-z">Name: A-Z</option>
+              <option value="name-z-a">Name: Z-A</option>
+            </select>
+          </div>
         </div>
-        
-        {/* Mobile Filter Button */}
-        <div className="md:hidden mb-4">
-          <button
-            onClick={toggleFilters}
-            className="w-full flex items-center justify-center bg-white border border-gray-200 rounded-md py-2 px-4 font-inter text-sm"
-          >
-            <Filter size={18} className="mr-2" />
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </button>
+
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
-        
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters - Mobile (Collapsible) */}
-          <div className={`md:hidden ${showFilters ? 'block' : 'hidden'} mb-4 animate-slide-in-left`}>
-            <FilterSection />
+
+        {/* Drawer for filters */}
+        <div
+          className={clsx(
+            'fixed inset-0 z-50 bg-black bg-opacity-30 transition-opacity',
+            showDrawer ? 'opacity-100 visible' : 'opacity-0 invisible'
+          )}
+          onClick={() => setShowDrawer(false)}
+        />
+        <div
+          className={clsx(
+            'fixed z-50 bg-white shadow-lg transition-transform duration-300 ease-in-out',
+            'w-full h-[80%] bottom-0 left-0 md:w-[400px] md:h-full md:right-0 md:top-0',
+            showDrawer
+              ? 'translate-y-0 md:translate-x-0'
+              : 'translate-y-full md:translate-x-full'
+          )}
+        >
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button onClick={() => setShowDrawer(false)}>
+              <X size={20} />
+            </button>
           </div>
-          
-          {/* Filters - Desktop (Always Visible) */}
-          <div className="hidden md:block w-64 flex-shrink-0">
-            <FilterSection />
-          </div>
-          
-          {/* Products */}
-          <div className="flex-grow">
-            {/* Sort Options */}
-            <div className="bg-white p-3 rounded-lg shadow-sm mb-6 flex justify-between items-center">
-              <div className="font-inter text-sm">
-                Showing <span className="font-semibold">{products.length}</span> products
-              </div>
-              <div className="flex items-center">
-                <label htmlFor="sort" className="font-inter text-sm mr-2">
-                  Sort by:
-                </label>
-                <select
-                  id="sort"
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                  className="font-inter text-sm p-1 border border-gray-200 rounded-md"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-low-high">Price: Low to High</option>
-                  <option value="price-high-low">Price: High to Low</option>
-                  <option value="name-a-z">Name: A to Z</option>
-                  <option value="name-z-a">Name: Z to A</option>
-                </select>
-              </div>
-            </div>
-            
-            {/* Product Grid */}
-            {products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <div key={product.id} className="animate-fade-in">
-                    <ProductCard product={product} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="font-poppins font-medium text-xl text-primary mb-2">
-                  No products found
-                </div>
-                <p className="font-inter text-gray-600">
-                  Try adjusting your filters to find what you're looking for.
-                </p>
-              </div>
-            )}
-          </div>
+          <FilterSection />
         </div>
       </div>
     </div>
