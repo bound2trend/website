@@ -1,24 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { mockProducts } from '../lib/mockProducts';
-import { Loader, Heart, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
-import FitRoomModal from '../components/FitRoomModal';
+import { Loader, Star, Heart, Truck, ShieldCheck, RotateCcw, Shirt, Info } from 'lucide-react';
 
 const ProductDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
-  const [pincode, setPincode] = useState('');
-  const [showTryOn, setShowTryOn] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [showFAQ, setShowFAQ] = useState(false);
 
   useEffect(() => {
-    const foundProduct = mockProducts.find(p => p.id === id);
-    setProduct(foundProduct || null);
-    setActiveImage(foundProduct?.images?.[0] || foundProduct?.image);
+    const found = mockProducts.find((p) => p.slug === slug);
+    setProduct(found || null);
     setLoading(false);
-  }, [id]);
+  }, [slug]);
 
   const getProductAge = (createdAt: string) => {
     const createdDate = new Date(createdAt);
@@ -28,160 +25,157 @@ const ProductDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen"><Loader className="animate-spin w-6 h-6" /></div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader className="animate-spin w-6 h-6" />
+      </div>
+    );
   }
 
   if (!product) {
-    return <div className="flex justify-center items-center min-h-screen"><p>Product not found.</p></div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>Product not found.</p>
+      </div>
+    );
   }
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert('Please select a size.');
-      return;
-    }
-    // Add to cart logic (connect with Supabase later)
-    alert(`Added ${product.name} (Size: ${selectedSize}) to cart.`);
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <div className="grid md:grid-cols-2 gap-10">
-        {/* Left Gallery */}
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Image Gallery */}
         <div>
-          <div className="overflow-hidden rounded-xl border">
-            <img src={activeImage} alt="Product" className="w-full object-cover hover:scale-105 transition-transform" />
-          </div>
-          <div className="flex gap-2 mt-4">
-            {product.images?.map((img: string, idx: number) => (
+          <img src={product.images[selectedImage]} alt={product.name} className="rounded-lg w-full object-cover" />
+          <div className="grid grid-cols-4 gap-2 mt-4">
+            {product.images.map((img: string, i: number) => (
               <img
-                key={idx}
+                key={i}
                 src={img}
-                onClick={() => setActiveImage(img)}
-                className={`h-20 w-20 rounded border cursor-pointer ${activeImage === img ? 'ring-2 ring-black' : ''}`}
+                className={`rounded cursor-pointer border ${selectedImage === i ? 'border-black' : 'border-transparent'}`}
+                onClick={() => setSelectedImage(i)}
+                alt=""
               />
             ))}
           </div>
         </div>
 
-        {/* Right Product Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-semibold">{product.name}</h1>
-            <p className="text-gray-500">by {product.brand}</p>
-            <p className="text-xs text-gray-400">Added: {getProductAge(product.createdAt)}</p>
+        {/* Product Details */}
+        <div>
+          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <p className="text-sm text-gray-500 mt-1">{product.brand} · {getProductAge(product.createdAt)}</p>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1 mt-2">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} size={16} className={i < 4 ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'} />
+            ))}
+            <span className="text-sm text-gray-600 ml-2">4.2 (87 reviews)</span>
           </div>
 
-          <div className="text-2xl font-bold">₹{product.price}</div>
+          {/* Price */}
+          <p className="text-2xl font-semibold mt-4">₹{product.price}</p>
 
           {/* Size Selector */}
-          <div>
-            <h2 className="font-medium text-sm mb-1">Select Size</h2>
+          <div className="mt-4">
+            <label className="text-sm font-medium mb-2 block">Size</label>
             <div className="flex gap-2">
-              {product.sizes?.map((size: string) => (
+              {product.sizes?.map((s: string) => (
                 <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`border rounded px-4 py-1 text-sm ${
-                    selectedSize === size ? 'bg-black text-white' : 'hover:bg-gray-100'
-                  }`}
+                  key={s}
+                  className={`border px-4 py-2 rounded-md text-sm ${selectedSize === s ? 'border-black font-semibold' : 'border-gray-300'}`}
+                  onClick={() => setSelectedSize(s)}
                 >
-                  {size}
+                  {s}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button onClick={handleAddToCart} className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800">Add to Cart</button>
-            <button onClick={() => setShowTryOn(true)} className="border px-6 py-2 rounded hover:bg-gray-100">Try On</button>
-            <button className="text-gray-500 hover:text-black"><Heart className="w-5 h-5 inline" /> Save</button>
+          {/* Buttons */}
+          <div className="mt-6 flex flex-wrap gap-4">
+            <button className="bg-black text-white px-5 py-2 rounded hover:bg-gray-800">Add to Cart</button>
+            <button className="flex items-center gap-1 border px-5 py-2 rounded hover:bg-gray-100">
+              <Shirt size={16} /> Try On
+            </button>
+            <button className="flex items-center gap-1 px-5 py-2 border rounded hover:bg-gray-100">
+              <Heart size={16} /> Wishlist
+            </button>
           </div>
 
-          {/* Pincode Delivery */}
-          <div className="space-y-1">
-            <label className="block text-sm font-medium">Check Delivery:</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter Pincode"
-                className="border px-3 py-1 rounded w-40"
-                value={pincode}
-                onChange={e => setPincode(e.target.value)}
-              />
-              <button className="text-sm underline">Check</button>
+          {/* Description */}
+          <div className="mt-8 text-sm text-gray-700 leading-relaxed">
+            {product.description}
+          </div>
+
+          {/* Delivery, Authenticity, Return */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex gap-2 items-start">
+              <Truck className="text-primary" />
+              <div>
+                <p className="font-medium">Fast Delivery</p>
+                <p className="text-xs text-gray-500">Get within 3-5 working days</p>
+              </div>
             </div>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="flex items-center gap-6 text-sm text-gray-600 border-t pt-4">
-            <div className="flex items-center gap-2"><Truck className="w-4 h-4" /> Fast Delivery</div>
-            <div className="flex items-center gap-2"><RefreshCw className="w-4 h-4" /> Easy Returns</div>
-            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Secure Payment</div>
+            <div className="flex gap-2 items-start">
+              <ShieldCheck className="text-primary" />
+              <div>
+                <p className="font-medium">100% Authentic</p>
+                <p className="text-xs text-gray-500">Original quality guaranteed</p>
+              </div>
+            </div>
+            <div className="flex gap-2 items-start">
+              <RotateCcw className="text-primary" />
+              <div>
+                <p className="font-medium">Easy Returns</p>
+                <p className="text-xs text-gray-500">Within 7 days of delivery</p>
+              </div>
+            </div>
           </div>
 
           {/* Fabric Info */}
-          <div>
-            <h3 className="font-semibold text-sm mt-6 mb-2">Fabric & Material</h3>
-            <p className="text-sm text-gray-700">{product.fabric || 'Premium cotton blend for all-day comfort and breathability.'}</p>
-          </div>
-
-          {/* Fabric Care Instructions */}
-          <div>
-            <h3 className="font-semibold text-sm mt-6 mb-2">Care Instructions</h3>
-            <ul className="text-sm list-disc list-inside text-gray-700 space-y-1">
-              <li>Dry clean preferred</li>
-              <li>Do not tumble dry</li>
-              <li>Iron at medium temperature</li>
-            </ul>
+          <div className="mt-6">
+            <h3 className="font-medium mb-1">Fabric & Care</h3>
+            <p className="text-sm text-gray-600">98% Cotton, 2% Spandex. Machine wash cold. Do not bleach.</p>
           </div>
 
           {/* Model Measurements */}
-          <div>
-            <h3 className="font-semibold text-sm mt-6 mb-1">Model Measurements</h3>
-            <p className="text-sm text-gray-700">Model is 6'1" / 185 cm and wears size M.</p>
+          <div className="mt-4">
+            <h3 className="font-medium mb-1">Model Measurements</h3>
+            <p className="text-sm text-gray-600">Height: 6'1", Wearing Size: M</p>
           </div>
 
-          {/* Reviews Tab */}
-          <div className="mt-8 border-t pt-6">
-            <h2 className="font-bold text-lg mb-2">Customer Reviews</h2>
-            <div className="space-y-2 text-sm text-gray-700">
-              <p>⭐️⭐️⭐️⭐️⭐️ &nbsp;Great fabric and fit. Loved the quality!</p>
-              <p>⭐️⭐️⭐️⭐️ &nbsp;Perfect for summer. Value for money.</p>
-            </div>
-          </div>
-
-          {/* Accordion-style FAQ */}
-          <div className="mt-6 border-t pt-6 space-y-4">
-            <details className="cursor-pointer">
-              <summary className="font-semibold text-sm">What is the return policy?</summary>
-              <p className="text-sm text-gray-600 mt-1">You can return the product within 10 days.</p>
-            </details>
-            <details className="cursor-pointer">
-              <summary className="font-semibold text-sm">Is COD available?</summary>
-              <p className="text-sm text-gray-600 mt-1">Yes, we support Cash on Delivery in most regions.</p>
-            </details>
-          </div>
-
-          {/* Similar Products (mocked) */}
-          <div className="mt-10">
-            <h2 className="text-xl font-semibold mb-4">Complete the Look</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {mockProducts.slice(0, 2).map((item) => (
-                <div key={item.id} className="text-sm">
-                  <img src={item.image} className="w-full h-40 object-cover rounded" />
-                  <p className="mt-1">{item.name}</p>
-                  <p className="text-gray-500 text-sm">₹{item.price}</p>
-                </div>
-              ))}
-            </div>
+          {/* FAQ */}
+          <div className="mt-6">
+            <button onClick={() => setShowFAQ(!showFAQ)} className="flex items-center gap-2 text-sm font-medium">
+              <Info size={18} /> Product FAQs
+            </button>
+            {showFAQ && (
+              <div className="mt-2 text-sm text-gray-600 space-y-2">
+                <p><strong>Q:</strong> Is it machine washable?</p>
+                <p><strong>A:</strong> Yes, cold wash recommended.</p>
+                <p><strong>Q:</strong> Does it shrink?</p>
+                <p><strong>A:</strong> Minimal shrinkage after first wash.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* FitRoom Modal */}
-      {showTryOn && <FitRoomModal product={product} onClose={() => setShowTryOn(false)} />}
+      {/* Related Products */}
+      <div className="mt-16">
+        <h2 className="text-xl font-bold mb-4">Complete the Look</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {mockProducts.slice(0, 4).map((p) => (
+            <div key={p.id} className="border rounded-md overflow-hidden hover:shadow">
+              <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
+              <div className="p-2">
+                <p className="text-sm font-medium">{p.name}</p>
+                <p className="text-xs text-gray-500">₹{p.price}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
